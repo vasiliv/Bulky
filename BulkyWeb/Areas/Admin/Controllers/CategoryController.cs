@@ -3,8 +3,9 @@ using Bulky.DataAccess.Data;
 using Microsoft.AspNetCore.Mvc;
 using Bulky.DataAccess.Repository.IRepository;
 
-namespace BulkyWeb.Controllers
+namespace BulkyWeb.Areas.Admin.Controllers
 {
+    [Area("Admin")]
     public class CategoryController : Controller
     {
         //private readonly ApplicationDbContext _db;
@@ -35,7 +36,7 @@ namespace BulkyWeb.Controllers
         //For Create new category button in Index.cshtml
         //[HttpGet] by default
         public IActionResult Create()
-        {            
+        {
             return View();
         }
         [HttpPost]
@@ -46,7 +47,8 @@ namespace BulkyWeb.Controllers
                 ModelState.AddModelError("name", "The display order can not exactly match the name");
             }
             //goes to model Caategory and checks all validations
-            if (ModelState.IsValid) {
+            if (ModelState.IsValid)
+            {
                 //_db.Categories.Add(obj);
                 //_db.SaveChanges();
                 //Repository pattern
@@ -61,7 +63,7 @@ namespace BulkyWeb.Controllers
         }
         public IActionResult Edit(int? id)
         {
-            if (id ==  null || id == 0)
+            if (id == null || id == 0)
             {
                 return NotFound();
             }
@@ -98,7 +100,7 @@ namespace BulkyWeb.Controllers
                 TempData["success"] = "Category updated successfu.lly";
                 return RedirectToAction("Index");
             }
-            return View();            
+            return View();
         }
         public IActionResult Delete(int? id)
         {
