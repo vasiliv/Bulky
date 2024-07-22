@@ -2,6 +2,8 @@
 using Bulky.DataAccess.Data;
 using Microsoft.AspNetCore.Mvc;
 using Bulky.DataAccess.Repository.IRepository;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace BulkyWeb.Areas.Admin.Controllers
 {
@@ -30,13 +32,20 @@ namespace BulkyWeb.Areas.Admin.Controllers
             //List<Category> objCategoryList = _db.Categories.ToList();
             //Repository pattern
             //List<Category> objCategoryList = _categoryRepo.GetAll().ToList();
-            List<Product> objCategoryList = _unitOfWork.Product.GetAll().ToList();
+            List<Product> objCategoryList = _unitOfWork.Product.GetAll().ToList();               
             return View(objCategoryList);
         }
         //For Create new category button in Index.cshtml
         //[HttpGet] by default
         public IActionResult Create()
         {
+            IEnumerable<SelectListItem> CategoryList = _unitOfWork.Category.GetAll()
+                                                        .Select(u => new SelectListItem
+                                                        {
+                                                            Text = u.Name,
+                                                            Value = u.Id.ToString()
+                                                        });
+            ViewBag.CategoryList = CategoryList;
             return View();
         }
         [HttpPost]

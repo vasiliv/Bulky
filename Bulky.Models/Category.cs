@@ -14,5 +14,7 @@ namespace Bulky.Models
         [DisplayName("Display Order")]
         [Range(1,100)]
         public int DisplayOrder { get; set; }
+        //Navigation
+        public ICollection<Product> Products { get; set; }
     }
 }
