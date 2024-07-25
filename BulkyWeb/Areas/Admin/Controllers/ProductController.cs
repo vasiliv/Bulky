@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Bulky.DataAccess.Repository.IRepository;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Bulky.Models.ViewModels;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 
 namespace BulkyWeb.Areas.Admin.Controllers
 {
@@ -23,9 +25,11 @@ namespace BulkyWeb.Areas.Admin.Controllers
         //}
         //Unit of Work
         private readonly IUnitOfWork _unitOfWork;
-        public ProductController(IUnitOfWork unitOfWork)
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        public ProductController(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
         {
             _unitOfWork = unitOfWork;
+            _webHostEnvironment = webHostEnvironment;
         }
         public IActionResult Index()
         {
@@ -37,7 +41,10 @@ namespace BulkyWeb.Areas.Admin.Controllers
         }
         //For Create new category button in Index.cshtml
         //[HttpGet] by default
-        public IActionResult Create()
+        //public IActionResult Create()
+
+        //Update + Insert
+        public IActionResult Upsert(int? id)
         {
             IEnumerable<SelectListItem> CategoryList = _unitOfWork.Category.GetAll()
                                                         .Select(u => new SelectListItem
@@ -45,11 +52,29 @@ namespace BulkyWeb.Areas.Admin.Controllers
                                                             Text = u.Name,
                                                             Value = u.Id.ToString()
                                                         });
-            ViewBag.CategoryList = CategoryList;
-            return View();
+            //ViewBag.CategoryList = CategoryList;
+            ProductVM productVM = new ProductVM()
+            {
+                CategoryList = CategoryList,
+                Product = new Product()
+            };
+
+            if (id == null || id == 0)
+            {
+                //create
+                return View(productVM);
+            }
+            else
+            {
+                //update
+                productVM.Product = _unitOfWork.Product.Get(u => u.Id == id);
+                return View(productVM);
+            }
         }
         [HttpPost]
-        public IActionResult Create(Product obj)
+        //public IActionResult Create(Product obj)
+        //public IActionResult Create(ProductVM productVM)
+        public IActionResult Upsert(ProductVM productVM, IFormFile? file)
         {            
             //goes to model Caategory and checks all validations
             if (ModelState.IsValid)
@@ -59,13 +84,40 @@ namespace BulkyWeb.Areas.Admin.Controllers
                 //Repository pattern
                 //_categoryRepo.Add(obj);
                 //_categoryRepo.Save();
-                _unitOfWork.Product.Add(obj);
+                
+                //_unitOfWork.Product.Add(obj);
+                string wwwRootPath = _webHostEnvironment.WebRootPath;
+                if (file != null)
+                {
+                    //full name
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    //file location
+                    string productPath = Path.Combine(wwwRootPath, @"images\product");
+
+                    using (var fileSteream = new FileStream(Path.Combine(productPath, fileName), FileMode.Create))
+                    {
+                        file.CopyTo(fileSteream);
+                    }
+                    productVM.Product.ImageUrl = @"\images\product" + fileName;
+                }
+                _unitOfWork.Product.Add(productVM.Product);
                 _unitOfWork.Save();
                 TempData["success"] = "Product created successfully";
                 return RedirectToAction("Index");
             }
-            return View();
-        }
+            else
+            {
+                productVM.CategoryList = _unitOfWork.Category.GetAll()
+                                            .Select(u => new SelectListItem
+                                            {
+                                                Text = u.Name,
+                                                Value = u.Id.ToString()
+                                            }); ;
+                return View(productVM);
+            }
+        }        
+        /*
+        Edit-is funqcionali sheitavsa Upsertma
         public IActionResult Edit(int? id)
         {
             if (id == null || id == 0)
@@ -107,6 +159,8 @@ namespace BulkyWeb.Areas.Admin.Controllers
             }
             return View();
         }
+        */
+
         public IActionResult Delete(int? id)
         {
             if (id == null || id == 0)
