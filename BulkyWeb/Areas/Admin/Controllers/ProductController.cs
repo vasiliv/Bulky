@@ -36,7 +36,8 @@ namespace BulkyWeb.Areas.Admin.Controllers
             //List<Category> objCategoryList = _db.Categories.ToList();
             //Repository pattern
             //List<Category> objCategoryList = _categoryRepo.GetAll().ToList();
-            List<Product> objCategoryList = _unitOfWork.Product.GetAll().ToList();               
+            List<Product> objCategoryList = _unitOfWork.Product
+                .GetAll(includeProperties: "Category").ToList();               
             return View(objCategoryList);
         }
         //For Create new category button in Index.cshtml
@@ -94,13 +95,24 @@ namespace BulkyWeb.Areas.Admin.Controllers
                     //file location
                     string productPath = Path.Combine(wwwRootPath, @"images\product");
 
+                    if (!string.IsNullOrEmpty(productVM.Product.ImageUrl))
+                    {
+                        //delete the old image
+                        var oldImagePath = Path.Combine(wwwRootPath, productVM.Product.ImageUrl.TrimStart('\\'));
+
+                        if (System.IO.File.Exists(oldImagePath))
+                        {
+                            System.IO.File.Delete(oldImagePath);
+                        }
+                    }
+                    //upload new image
                     using (var fileSteream = new FileStream(Path.Combine(productPath, fileName), FileMode.Create))
                     {
                         file.CopyTo(fileSteream);
                     }
                     productVM.Product.ImageUrl = @"\images\product\" + fileName;
                 }
-                //_unitOfWork.Product.Add(productVM.Product);
+                
                 if (productVM.Product.Id == 0)
                 {
                     _unitOfWork.Product.Add(productVM.Product);
