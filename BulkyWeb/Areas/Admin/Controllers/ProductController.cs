@@ -98,9 +98,17 @@ namespace BulkyWeb.Areas.Admin.Controllers
                     {
                         file.CopyTo(fileSteream);
                     }
-                    productVM.Product.ImageUrl = @"\images\product" + fileName;
+                    productVM.Product.ImageUrl = @"\images\product\" + fileName;
                 }
-                _unitOfWork.Product.Add(productVM.Product);
+                //_unitOfWork.Product.Add(productVM.Product);
+                if (productVM.Product.Id == 0)
+                {
+                    _unitOfWork.Product.Add(productVM.Product);
+                }
+                else
+                {
+                    _unitOfWork.Product.Update(productVM.Product);
+                }
                 _unitOfWork.Save();
                 TempData["success"] = "Product created successfully";
                 return RedirectToAction("Index");
