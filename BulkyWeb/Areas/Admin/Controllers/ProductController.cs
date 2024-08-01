@@ -36,9 +36,9 @@ namespace BulkyWeb.Areas.Admin.Controllers
             //List<Category> objCategoryList = _db.Categories.ToList();
             //Repository pattern
             //List<Category> objCategoryList = _categoryRepo.GetAll().ToList();
-            List<Product> objCategoryList = _unitOfWork.Product
+            List<Product> objProductList = _unitOfWork.Product
                 .GetAll(includeProperties: "Category").ToList();               
-            return View(objCategoryList);
+            return View(objProductList);
         }
         //For Create new category button in Index.cshtml
         //[HttpGet] by default
@@ -226,5 +226,14 @@ namespace BulkyWeb.Areas.Admin.Controllers
             TempData["success"] = "Category deleted successfully";
             return RedirectToAction("Index");
         }
+        #region API CALLS
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            List<Product> objProductList = _unitOfWork.Product
+                .GetAll(includeProperties: "Category").ToList();
+            return Json(new { data = objProductList });
+        }
+        #endregion
     }
 }
